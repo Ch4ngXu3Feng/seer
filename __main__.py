@@ -1,62 +1,42 @@
 # coding=utf-8
 
-import tornado.ioloop
-
-from series.data import SeriesData
-from handler import DoubanApp
-
 
 def main() -> None:
-    app = DoubanApp()
-    app.listen(9090)
-    tornado.ioloop.IOLoop.instance().start()
+    import os
+    import tornado.ioloop
+    from tornado.web import Application
+    from handler import ViewHandler, TermHandler
+
+    handlers = [
+        (r'/(.*)/(.*)/view', ViewHandler),
+        (r'/(.*)/(.*)/term', TermHandler),
+    ]
+
+    settings = dict(
+        static_path=os.path.join(os.path.dirname(__file__), "static"),
+        debug=True,
+    )
+
+    Application(handlers, **settings).listen(9090)
+
+    try:
+        tornado.ioloop.IOLoop.instance().start()
+    except KeyboardInterrupt:
+        tornado.ioloop.IOLoop.instance().stop()
 
 
 def test() -> None:
     from source.sqlite3 import SqliteDataSource
-    from source.csv import CsvDataSource
-    from source.excel import ExcelDataSource
-    from drawing.plotly import PlotlyDrawing
-    from series.visitor import SeriesDataVisitor
-    from core.query import DataQuery
-    from core.source import DataSource
+    source = SqliteDataSource("data", "test", "test")
+    source.mock()
+    source.store()
+    return
 
-    from query.tag import TagQuery
-    from query.field import FieldQuery
-    from query.range import RangeQuery
-    from query.term import TermQuery
-
-    # ds: DataSource = ExcelDataSource("data", "test", "test", "gb2312")
-    ds: DataSource = SqliteDataSource("data", "test", "test", "gb2312")
-
-    """
-    ds.mock()
-    ds.store()
-    ds.clean()
-    """
-
-    drawing = PlotlyDrawing()
-
-    sd = SeriesData(ds, drawing)
-    pdv = SeriesDataVisitor(sd.context())
-
-    query: DataQuery = TagQuery("color", "red").add_query(
-        TagQuery("area", "bj").add_query(
-            RangeQuery("timestamp", (1541692800, 1541693400)).add_query(
-                FieldQuery("count").add_query(
-                    TermQuery("timestamp")
-                )
-            )
-        )
-    )
-
-    query.accept(pdv)
-
-    sd.render()
-    for c in ds.columns():
-        print(c, ds.unique(c))
+    from handler import View
+    view = View()
+    view.test()
 
 
 if __name__ == "__main__":
-    test()
-    #main()
+    # test()
+    main()
