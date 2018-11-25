@@ -20,7 +20,7 @@ class MovieSubjectViewItem(scrapy.Item):
 
 
 class MovieSubjectSchema(Schema):
-    def __init__(self, file_name: str, table_name: str):
+    def __init__(self, file_name: str, table_name: str) -> None:
         super().__init__()
 
         self.__item: scrapy.Item = None
@@ -122,7 +122,7 @@ class MovieSubjectSchema(Schema):
 
     def loop_term(self, item: scrapy.Item,
                   index: int, key: str, terms: List[str], name: str, field: str,
-                  data: Dict[str, Dict[int, Union[int, List[int]]]]):
+                  data: Dict[str, Dict[int, Union[int, List[int]]]]) -> None:
 
         if index != len(terms):
             term = terms[index]
@@ -141,13 +141,13 @@ class MovieSubjectSchema(Schema):
 
     def term_field(self, item: scrapy.Item,
                    name: str, terms: List[str], field: str,
-                   data: Dict[str, Dict[int, Union[int, List[int]]]]):
+                   data: Dict[str, Dict[int, Union[int, List[int]]]]) -> None:
 
         self.loop_term(item, 0, "", terms, name, field, data)
 
     def __term_field(self, item: scrapy.Item,
                      name: str, key: str, field: str,
-                     data: Dict[str, Dict[int, Union[int, List[int]]]]):
+                     data: Dict[str, Dict[int, Union[int, List[int]]]]) -> None:
 
         _data: Dict[int, Union[int, List[int]]] = data.get(key)
 
@@ -189,7 +189,7 @@ class MovieSubjectSchema(Schema):
             result[name] = _result
         return result
 
-    def _process_series(self, data: Series, context: SeriesContext):
+    def _process_series(self, data: Series, context: SeriesContext) -> None:
         item = MovieSubjectViewItem()
 
         if not self.parse(data, item):
@@ -203,7 +203,7 @@ class MovieSubjectSchema(Schema):
 
         self.term_field(item, context.range_name, context.terms, context.field_name, context.data)
 
-    def process_series(self, context: SeriesContext):
+    def process_series(self, context: SeriesContext) -> None:
         if context.field_aggregation == "count":
             context.field_name = ""
 

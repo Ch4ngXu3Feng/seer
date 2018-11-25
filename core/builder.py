@@ -5,7 +5,7 @@ from .schema import Schema
 
 
 class Builder:
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def create_schema(self) -> Schema:

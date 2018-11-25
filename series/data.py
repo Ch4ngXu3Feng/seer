@@ -8,7 +8,7 @@ from core.drawing import Drawing
 
 
 class SeriesContext:
-    def __init__(self):
+    def __init__(self) -> None:
         self.range_name: str = ""
         self.range: Tuple[int, int] = tuple()
         self.tags: List[Tuple[str, str]] = list()
