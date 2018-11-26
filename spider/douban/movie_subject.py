@@ -77,7 +77,7 @@ class Pipeline:
             f"'{genre}', '{release}', '{episode}', '{duration}', '{runtime}', '{average}', '{votes}')"
         )
         logging.info(log)
-        print(log)
+        print(log, flush=True)
 
         self.cur.execute(
             f"INSERT OR IGNORE INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

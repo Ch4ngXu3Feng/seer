@@ -15,7 +15,7 @@ class ExcelDataSource(DataSource):
     def data(self) -> DataFrame:
         if self.df is None:
             self.df = pd.read_excel(self.__data_path, self.__table_name, encoding=self.encoding())
-        print(self.df)
+        print(self.df, flush=True)
         return self.df
 
     def store(self) -> None:

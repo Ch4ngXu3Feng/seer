@@ -42,8 +42,11 @@ class Pipeline:
         score_num = item['score_num']
 
         print(
-            f"INSERT OR IGNORE INTO {table} "
-            f"VALUES(NULL, '{movie_name}', {ranking}, {score}, {score_num})"
+            (
+                f"INSERT OR IGNORE INTO {table} "
+                f"VALUES(NULL, '{movie_name}', {ranking}, {score}, {score_num})"
+            ),
+            flush=True
         )
 
         self.cur.execute(

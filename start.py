@@ -1,7 +1,6 @@
 # coding=utf-8
 
-import time
-from scrapy import cmdline
+import time, os
 
 if __name__ == "__main__":
     for year in list(range(1980, 2019)):
@@ -12,5 +11,5 @@ if __name__ == "__main__":
             f'-a table=subject '
             f'-s LOG_FILE=data/douban_movie_subject_{year}.log'
         )
-        cmdline.execute(cmd.split())
+        os.system(cmd)
         time.sleep(30)
