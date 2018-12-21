@@ -1,9 +1,8 @@
 # coding=utf-8
 
-from typing import List, Dict, Union
-from datetime import datetime
+from typing import List, Dict, Union, Type
 
-import numpy as np
+from numpy import ndarray
 import plotly.graph_objs as go
 import plotly
 
@@ -22,17 +21,12 @@ class PlotlyDrawing(Drawing):
         x = sorted(data.keys())
         y = [data[k] for k in x]
 
+        # from datetime import datetime
         # x=[datetime.utcfromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S') for t in x],
         trace = go.Scatter(name=name, x=x, y=y)
         self.__traces.append(trace)
 
-    def add_box(self, name: str, data: List[Union[float, int]]) -> None:
-        """
-        x = sorted(data.keys())
-        y = [data[k] for k in x]
-        print(x, y, type(x), type(y), type(y[0]))
-        """
-
+    def add_box(self, name: str, data: Type[ndarray]) -> None:
         trace = go.Box(
             name=str(name),
             y=data,
@@ -45,7 +39,6 @@ class PlotlyDrawing(Drawing):
     def test(self) -> None:
         plotly.offline.plot(
             self.__traces, filename='data/test.html',
-            # auto_open=False, include_plotlyjs=False, output_type='div',
         )
 
     def draw(self) -> str:

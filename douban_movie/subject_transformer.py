@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Callable
 import time
 
 from pandas import DataFrame
@@ -29,25 +29,27 @@ class MovieSubjectTransformer(Transformer):
             Item.VOTES_NAME: self.__parse_votes,
         }
 
-        self.__column_data: List = None
-        self.__view_data: List = None
+        self.__column_data: List[int, int, Callable] = None
+        self.__view_data: List[Tuple[str, List]] = None
         self.__values: List = None
 
     def transform(self, src: DataSource, dst: DataSource, store: DataStore) -> None:
         self.__values = list()
 
-        views: Dict = store.view_map()
-        columns: List = store.columns()
+        views: Dict[str, Tuple[str, int]] = store.view_map()
+        columns: List[str] = store.columns()
 
         self.__column_data = [
-            (name, index, views[name][1], self.__parsers[name])
+            (index, views[name][1], self.__parsers[name])
             for index, name in enumerate(columns)
         ]
 
-        self.__view_data: List[Tuple[int, int, List]] = [None] * len(views)
+        self.__view_data: List[Tuple[str, List]] = [None] * len(views)
 
-        for _, index in views.items():
-            self.__view_data[index[1]] = (index[0], index[1], list())
+        for _, view in views.items():
+            name: str = view[0]
+            index: int = view[1]
+            self.__view_data[index] = (name, list())
 
         _data = src.read(columns, True)
 
@@ -80,7 +82,7 @@ class MovieSubjectTransformer(Transformer):
 
     def __transform_record(self, record: Tuple, column_index: int=0) -> None:
         if column_index < len(self.__column_data):
-            name, index, view_index, parse = self.__column_data[column_index]
+            index, view_index, parse = self.__column_data[column_index]
             value = parse(record[index])
 
             if isinstance(value, list):

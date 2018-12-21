@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 import pandas as pd
 
 
@@ -32,5 +32,5 @@ class DataStore(object):
     def columns(self) -> List[str]:
         raise NotImplementedError()
 
-    def view_map(self) -> List[Tuple[str, int]]:
+    def view_map(self) -> Dict[str, Tuple[str, int]]:
         raise NotImplementedError()

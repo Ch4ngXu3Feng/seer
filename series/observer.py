@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import pandas as pd
 
@@ -32,17 +32,9 @@ class SdAggregatorObserver(AggregatorObserver):
     def update_data_frame(self, name: str, data: pd.DataFrame) -> None:
         drawing = self.__sd.drawing
         aggregator = self.__sd.aggregator
-        if isinstance(aggregator, (SumFieldAggregator, MeanFieldAggregator)):
-            d1 = dict()
-            for name, value in data.items():
-                t, ts = name
-                d2 = d1.get(t)
-                if d2 is None:
-                    d2 = dict()
-                    d1[t] = d2
-                d2[ts] = value
 
-            for name, __data in d1.items():
+        if isinstance(aggregator, (SumFieldAggregator, MeanFieldAggregator)):
+            for name, __data in self.__split_dict(data).items():
                 drawing.add_scatter(name, __data)
 
         elif isinstance(aggregator, BoxFieldAggregator):
@@ -51,17 +43,19 @@ class SdAggregatorObserver(AggregatorObserver):
         else:
             raise NotImplementedError()
 
-    def update_series(self, _name: str, series: pd.Series) -> None:
+    def update_series(self, name: str, series: pd.Series) -> None:
         drawing = self.__sd.drawing
+        for _name, _data in self.__split_dict(series.to_dict()).items():
+            drawing.add_scatter(_name, _data)
 
-        d1 = dict()
-        for name, value in series.to_dict().items():
-            t, ts = name
-            d2 = d1.get(t)
-            if d2 is None:
-                d2 = dict()
-                d1[t] = d2
-            d2[ts] = value
-
-        for name, data in d1.items():
-            drawing.add_scatter(name, data)
+    @staticmethod
+    def __split_dict(data: Any) -> Dict[Any, Dict[Any, Any]]:
+        result: Dict = dict()
+        for _name, _value in data.items():
+            first, second = _name
+            _data = result.get(first)
+            if _data is None:
+                _data = dict()
+                result[first] = _data
+            _data[second] = _value
+        return result

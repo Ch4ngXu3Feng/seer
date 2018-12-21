@@ -1,6 +1,7 @@
 # coding=utf-8
 
-from typing import Dict, List, Union
+from typing import Dict, Type
+from numpy import ndarray
 
 
 class Drawing(object):
@@ -13,7 +14,7 @@ class Drawing(object):
     def add_scatter(self, name: str, data: Dict[int, int]) -> None:
         raise NotImplementedError()
 
-    def add_box(self, name: str, data: List[Union[float, int]]) -> None:
+    def add_box(self, name: str, data: Type[ndarray]) -> None:
         raise NotImplementedError()
 
     def draw(self) -> str:
