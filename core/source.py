@@ -1,15 +1,16 @@
 # coding=utf-8
 
-from typing import List, Optional, Union
-from pandas import DataFrame
+from typing import List, Union
 import numpy as np
+from pandas import DataFrame
 from pandas.api.types import is_string_dtype
 
 
-class DataSource:
+class DataSource(object):
     def __init__(self, file_dir: str, file_name: str, encoding: str="utf-8") -> None:
         super().__init__()
-        self.__df: Optional[DataFrame] = None
+
+        self.__data: Union[DataFrame, List] = None
         self.__file_dir: str = file_dir
         self.__file_name: str = file_name
         self.__encoding: str = encoding
@@ -18,33 +19,36 @@ class DataSource:
         return self.__encoding
 
     def clean(self) -> None:
-        self.__df = None
+        self.__data = None
 
     @property
-    def df(self) -> Optional[DataFrame]:
-        return self.__df
+    def data(self) -> Union[DataFrame, List]:
+        return self.__data
 
-    @df.setter
-    def df(self, value: DataFrame) -> None:
-        self.__df = value
+    @data.setter
+    def data(self, value: Union[DataFrame, List]) -> None:
+        self.__data = value
 
-    def data(self) -> DataFrame:
-        raise NotImplementedError
+    def read(self, fields: List[str]=None, raw: bool=False) -> Union[DataFrame, List]:
+        raise NotImplementedError()
+
+    def write(self) -> None:
+        raise NotImplementedError()
 
     def columns(self) -> List[str]:
-        if self.__df is None:
-            raise NotImplementedError
-        return list(self.__df)
+        if self.__data is None:
+            raise NotImplementedError()
+        return list(self.__data)
 
     def unique(self, name: str) -> List[Union[int, str]]:
-        if self.__df is None:
-            raise NotImplementedError
-        return list(self.__df[name].unique())
+        if self.__data is None:
+            raise NotImplementedError()
+        return list(self.__data[name].unique())
 
     def is_text_column(self, name: str) -> bool:
-        if self.__df is None:
-            raise NotImplementedError
-        return is_string_dtype(self.__df[name].dtype)
+        if self.__data is None:
+            raise NotImplementedError()
+        return is_string_dtype(self.__data[name].dtype)
 
     def mock(self) -> None:
         data = {
@@ -56,15 +60,13 @@ class DataSource:
             'color': ['red', 'red', 'red', 'blue', 'red', 'red', 'blue', 'red'],
             'count': np.random.randn(8),
         }
-        self.__df = DataFrame(data, index=list(range(0, 8)))
-
-    def store(self) -> None:
-        raise NotImplementedError
+        self.__data = DataFrame(data, index=list(range(0, 8)))
 
     def extension(self) -> str:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def path(self) -> str:
-        if not self.__file_name.endswith(self.extension()):
-            self.__file_name += self.extension()
-        return "%s/%s" % (self.__file_dir, self.__file_name)
+        _dir: str = self.__file_dir
+        _file: str = self.__file_name
+        _extension: str = self.extension()
+        return f"{_dir}/{_file}.{_extension}"

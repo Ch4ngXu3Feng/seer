@@ -9,85 +9,14 @@ import logging
 from scrapy.spiders import CrawlSpider, Request, Rule, Spider
 from scrapy.linkextractors import LinkExtractor
 
-import spider.douban.top250_movie as dtm
-import spider.douban.movie_subject as dms
+import spider.douban_music.subject_pipeline as dms
 
 
-class Top250MoviePageSpider(Spider):
-    name = 'douban_top250_movie_page'
-
-    custom_settings = {
-        'ITEM_PIPELINES': {
-            'spider.douban.top250_movie.Pipeline': 0,
-        }
-    }
-
-    def start_requests(self):
-        url = 'https://movie.douban.com/top250'
-        yield Request(url)
-
-    def parse(self, response):
-        item = dtm.Item()
-        movies = response.xpath('//ol[@class="grid_view"]/li')
-        for movie in movies:
-            item['ranking'] = movie.xpath(
-                './/div[@class="pic"]/em/text()'
-            ).extract()[0]
-
-            item['movie_name'] = movie.xpath(
-                './/div[@class="hd"]/a/span[1]/text()'
-            ).extract()[0]
-
-            item['score'] = movie.xpath(
-                './/div[@class="star"]/span[@class="rating_num"]/text()'
-            ).extract()[0]
-
-            item['score_num'] = movie.xpath(
-                './/div[@class="star"]/span/text()'
-            ).re(r'(\d+)人评价')[0]
-
-            yield item
-
-        next_url = response.xpath('//span[@class="next"]/a/@href').extract()
-        if next_url:
-            next_url = 'https://movie.douban.com/top250' + next_url[0]
-            yield Request(next_url)
-
-
-class Top250MovieAjaxSpider(Spider):
-    name = 'douban_top250_movie_ajax'
-
-    custom_settings = {
-        'ITEM_PIPELINES': {
-            'spider.douban.top250_movie.Pipeline': 0,
-        }
-    }
-
-    def start_requests(self):
-        url = 'https://movie.douban.com/j/chart/top_list?type=5&interval_id=100%3A90&action=&start=0&limit=20'
-        yield Request(url)
-
-    def parse(self, response):
-        datas = json.loads(response.body)
-        item = dtm.Item()
-        if datas:
-            for data in datas:
-                item['ranking'] = data['rank']
-                item['movie_name'] = data['title']
-                item['score'] = data['score']
-                item['score_num'] = data['vote_count']
-                yield item
-
-            page_num = re.search(r'start=(\d+)', response.url).group(1)
-            page_num = 'start=' + str(int(page_num)+20)
-            next_url = re.sub(r'start=\d+', page_num, response.url)
-            yield Request(next_url)
-
-
-class MovieSubjectSpider(CrawlSpider):
-    name = 'douban_movie'
-    allowed_domains = ['movie.douban.com']
-    start_urls = ['https://movie.douban.com/subject/1292052/']
+# FIXME
+class MusicSubjectSpider(CrawlSpider):
+    name = 'douban_music_subject_page'
+    allowed_domains = ['music.douban.com']
+    start_urls = ['https://music.douban.com/subject/1292052/']
 
     custom_settings = {
         'ITEM_PIPELINES': {
@@ -211,7 +140,7 @@ class MovieSubjectTagSpider(Spider):
 
     def start_requests(self):
         bid = ''.join(random.choice(string.ascii_letters + string.digits) for x in range(11))
-        yield Request(self.url, cookies={'bid': bid})
+        yield Request(self.start_url, cookies={'bid': bid})
 
     def parse_subject(self, response):
         self.check_code(response)
@@ -219,101 +148,126 @@ class MovieSubjectTagSpider(Spider):
         subject = dms.Item()
 
         try:
-            if "movie_id":
+            if dms.Item.MOVIE_ID_NAME:
                 movie_id = response.url.split("subject/")[-1].split("/")[0]
-                subject['movie_id'] = int(movie_id)
+                subject[dms.Item.MOVIE_ID_NAME] = int(movie_id)
 
-            if "title":
-                subject['title'] = ""
+            if dms.Item.TITLE_NAME:
+                name: str = dms.Item.TITLE_NAME
+                value: str = ""
                 query = '//title/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['title'] = data[0][:-5].strip()
+                    value = data[0][:-5].strip()
+                subject[name] = value
 
-            if "director":
-                subject['director'] = ""
+            if dms.Item.DIRECTOR_NAME:
+                name: str = dms.Item.DIRECTOR_NAME
+                value: str = ""
                 query = '//a[@rel="v:directedBy"]/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['director'] = "/".join(data)
+                    value = "/".join(data)
+                subject[name] = value
 
-            if "author":
-                subject['author'] = ""
+            if dms.Item.AUTHOR_NAME:
+                name: str = dms.Item.AUTHOR_NAME
+                value: str = ""
                 query = '//span[text()="编剧"]/following-sibling::*/a/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['author'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "actor":
-                subject['actor'] = ""
+            if dms.Item.ACTOR_NAME:
+                name: str = dms.Item.ACTOR_NAME
+                value: str = ""
                 query = '//a[@rel="v:starring"]/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['actor'] = "/".join(data)
+                    value = "/".join([_data.strip() for _data in data])
+                subject[name] = value
 
-            if "region":
-                subject['region'] = ""
+            if dms.Item.REGION_NAME:
+                name: str = dms.Item.REGION_NAME
+                value: str = ""
                 query = '//text()[preceding-sibling::span[text()="制片国家/地区:"]][following-sibling::br]'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['region'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "lang":
-                subject['lang'] = ""
+            if dms.Item.LANG_NAME:
+                name: str = dms.Item.LANG_NAME
+                value: str = ""
                 query = '//text()[preceding-sibling::span[text()="语言:"]][following-sibling::br]'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['lang'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "genre":
-                subject['genre'] = ""
+            if dms.Item.GENRE_NAME:
+                name: str = dms.Item.GENRE_NAME
+                value: str = ""
                 query = '//span[@property="v:genre"]/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['genre'] = '/'.join(data)
+                    value = '/'.join([_data.strip() for _data in data])
+                subject[name] = value
 
-            if "release":
-                subject['release'] = ""
+            if dms.Item.RELEASE_NAME:
+                name: str = dms.Item.RELEASE_NAME
+                value: str = ""
                 query = '//span[@property="v:initialReleaseDate"]/@content'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['release'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "episode":
-                subject['episode'] = ""
-                # query = '//text()[preceding-sibling::span[text()="集数:"]][following-sibling::br]'
+            if dms.Item.EPISODE_NAME:
+                name: str = dms.Item.EPISODE_NAME
+                value: str = ""
                 query = '//text()[preceding-sibling::span[text()="集数:"]][following-sibling::br]'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['episode'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "duration":
-                subject['duration'] = ""
+            if dms.Item.DURATION_NAME:
+                name: str = dms.Item.DURATION_NAME
+                value: str = ""
                 query = '//text()[preceding-sibling::span[text()="单集片长:"]][following-sibling::br]'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['duration'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "runtime":
-                subject['runtime'] = ""
+            if dms.Item.RUNTIME_NAME:
+                name: str = dms.Item.RUNTIME_NAME
+                value: str = ""
                 query = '//span[@property="v:runtime"]/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['runtime'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "average":
-                subject['average'] = ""
+            if dms.Item.AVERAGE_NAME:
+                name: str = dms.Item.AVERAGE_NAME
+                value: str = ""
                 query = '//strong[@property="v:average"]/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['average'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
-            if "votes":
-                subject['votes'] = ""
+            if dms.Item.VOTES_NAME:
+                name: str = dms.Item.VOTES_NAME
+                value: str = ""
                 query = '//span[@property="v:votes"]/text()'
                 data = response.xpath(query).extract()
                 if data:
-                    subject['votes'] = data[0].strip()
+                    value = data[0].strip()
+                subject[name] = value
 
         except Exception as e:
             logging.error("Exception: %s", str(e))

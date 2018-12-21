@@ -2,11 +2,13 @@
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from query.visitor import DataVisitor
+    from core.visitor import DataVisitor
 
 
-class DataQuery:
+class DataQuery(object):
     def __init__(self, name: str) -> None:
+        super().__init__()
+
         self.__next: DataQuery = None
         self.__name: str = name
         self.__text: str = ""
@@ -14,6 +16,8 @@ class DataQuery:
     def accept(self, visitor: 'DataVisitor') -> None:
         if self.__next:
             self.__next.accept(visitor)
+        else:
+            visitor.finish()
 
     def add_query(self, query: 'DataQuery') -> 'DataQuery':
         if query is not None:

@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from core.query import DataQuery
-from .visitor import DataVisitor
+from core.visitor import DataVisitor
 
 
 class TermQuery(DataQuery):

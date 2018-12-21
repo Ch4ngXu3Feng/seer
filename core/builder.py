@@ -1,15 +1,22 @@
 # coding=utf-8
 
 from .drawing import Drawing
-from .schema import Schema
+from .store import DataStore
+from .source import DataSource
 
 
-class Builder:
+class Builder(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def create_schema(self) -> Schema:
-        raise NotImplementedError
+    def load(self) -> None:
+        raise NotImplementedError()
 
-    def create_drawing(self) -> Drawing:
-        raise NotImplementedError
+    def create_source(self, application: str, topic: str) -> DataSource:
+        raise NotImplementedError()
+
+    def create_store(self, application: str, topic: str) -> DataStore:
+        raise NotImplementedError()
+
+    def create_drawing(self, application: str, topic: str) -> Drawing:
+        raise NotImplementedError()

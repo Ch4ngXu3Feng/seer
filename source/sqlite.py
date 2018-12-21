@@ -1,9 +1,9 @@
 # coding=utf-8
 
-from typing import List
+from typing import List, Union
 
+import time
 import pandas as pd
-from pandas import DataFrame
 import sqlite3 as sql
 
 from core.source import DataSource
@@ -34,12 +34,31 @@ class SqliteDataSource(DataSource):
     def data_path(self, value: str) -> None:
         self.__data_path = value
 
-    def data(self) -> DataFrame:
-        if self.df is None:
-            table_name = self.__table_name
-            query = f"SELECT * FROM {table_name};"
-            self.df = pd.read_sql_query(query, self.__conn)
-        return self.df
+    def read(self, fields: List[str] = None, raw: bool=False) -> Union[pd.DataFrame, List]:
+        if self.data is None:
+            if fields:
+                _fields = ", ".join(fields)
+            else:
+                _fields = "*"
+
+            start = int(time.time())
+            query = "SELECT %s FROM %s;" % (_fields, self.__table_name)
+            if raw:
+                cursor = self.__conn.cursor()
+                cursor.execute(query)
+                self.data = cursor.fetchall()
+            else:
+                self.data = pd.read_sql_query(query, self.__conn)
+            end = int(time.time())
+            print("sqlite read data time: ", end - start, len(self.data), flush=True)
+
+        return self.data
+
+    def write(self) -> None:
+        self.data.to_sql(self.__table_name, self.__conn, if_exists="replace", index=False)
+
+    def extension(self) -> str:
+        return "sqlite"
 
     def mock(self) -> None:
         table = self.__table_name
@@ -70,9 +89,3 @@ class SqliteDataSource(DataSource):
         )
 
         self.__conn.commit()
-
-    def extension(self) -> str:
-        return ".db"
-
-    def store(self) -> None:
-        return

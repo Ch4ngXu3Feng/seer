@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from typing import List, Union
+
 import pandas as pd
 from pandas import DataFrame
 
@@ -12,15 +14,15 @@ class CsvDataSource(DataSource):
         self.__table_name: str = table
         self.__data_path: str = self.path()
 
-    def data(self) -> DataFrame:
-        if self.df is None:
-            self.df = pd.read_csv(self.__data_path)
-        return self.df
+    def read(self, fields: List[str]=None, raw: bool=False) -> Union[DataFrame, List]:
+        if self.data is None:
+            self.data = pd.read_csv(self.__data_path)
+        return self.data
 
-    def store(self) -> None:
-        _df: DataFrame = self.df
+    def write(self) -> None:
+        _df: DataFrame = self.data
         if _df is not None:
             _df.to_csv(self.__data_path)
 
     def extension(self) -> str:
-        return ".csv"
+        return "csv"

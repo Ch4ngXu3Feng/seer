@@ -3,7 +3,7 @@
 from typing import Union
 
 from core.query import DataQuery
-from .visitor import DataVisitor
+from core.visitor import DataVisitor
 
 
 class TagQuery(DataQuery):

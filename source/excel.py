@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from typing import List, Union
+
 import pandas as pd
 from pandas import DataFrame
 
@@ -12,16 +14,16 @@ class ExcelDataSource(DataSource):
         self.__table_name: str = table
         self.__data_path: str = self.path()
 
-    def data(self) -> DataFrame:
-        if self.df is None:
-            self.df = pd.read_excel(self.__data_path, self.__table_name, encoding=self.encoding())
-        print(self.df, flush=True)
-        return self.df
+    def read(self, fields: List[str]=None, raw: bool=False) -> Union[DataFrame, List]:
+        if self.data is None:
+            self.data = pd.read_excel(self.__data_path, self.__table_name, encoding=self.encoding())
+        print(self.data, flush=True)
+        return self.data
 
-    def store(self) -> None:
-        df: DataFrame = self.df
+    def write(self) -> None:
+        df: DataFrame = self.data
         if df is not None:
             df.to_excel(self.__data_path, encoding=self.encoding())
 
     def extension(self) -> str:
-        return ".xlsx"
+        return "xlsx"

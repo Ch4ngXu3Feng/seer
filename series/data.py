@@ -1,37 +1,55 @@
 # coding=utf-8
 
-from typing import List, Dict, Tuple
+from typing import Any, Type, Optional
+import time
+import pandas as pd
 
 from core.builder import Builder
-from core.schema import Schema
+from core.store import DataStore
 from core.drawing import Drawing
+from core.adapter import Adapter
+from core.aggregator import Aggregator
+from core.observer import AggregatorObserver
+
+from .observer import SdAggregatorObserver
 
 
-class SeriesContext:
-    def __init__(self) -> None:
-        self.range_name: str = ""
-        self.range: Tuple[int, int] = tuple()
-        self.tags: List[Tuple[str, str]] = list()
-        self.field_name: str = ""
-        self.field_aggregation: str = ""
-        self.terms: List[str] = list()
-        self.data: Dict[str, Dict[int, int]] = dict()
-
-
-class SeriesData:
-    def __init__(self, builder: Builder) -> None:
+class SeriesData(Adapter):
+    def __init__(self, application: str, topic: str, builder: Builder) -> None:
         super().__init__()
 
-        self.__context: SeriesContext = SeriesContext()
-        self.__builder: builder = builder
-        self.__drawing: Drawing = builder.create_drawing()
-        self.__schema: Schema = builder.create_schema()
+        self.__builder: Builder = builder
+        self.__store: DataStore = builder.create_store(application, topic)
+        self.__drawing: Drawing = builder.create_drawing(application, topic)
+        self.__aggregator: Optional[Aggregator] = None
 
-    def context(self) -> SeriesContext:
-        return self.__context
+    @property
+    def drawing(self) -> Drawing:
+        return self.__drawing
+
+    @property
+    def aggregator(self) -> Optional[Aggregator]:
+        return self.__aggregator
+
+    @aggregator.setter
+    def aggregator(self, value: Aggregator) -> None:
+        self.__aggregator = value
+
+    def adapter(self, clazz: Type[Any]) -> Any:
+        if clazz is AggregatorObserver:
+            return SdAggregatorObserver(self)
+        elif clazz is pd.DataFrame:
+            return self.__store.data
+        elif clazz is DataStore:
+            return self.__store
+        else:
+            return None
 
     def render(self) -> str:
-        self.__schema.process_series(self.__context)
-        for name, data in self.__context.data.items():
-            self.__drawing.add_trace(name, data)
-        return self.__drawing.draw()
+        html: str = ""
+        start = int(time.time())
+        if len(self.__drawing):
+            html = self.__drawing.draw()
+        end = int(time.time())
+        print("drawing scatter: ", end - start)
+        return html

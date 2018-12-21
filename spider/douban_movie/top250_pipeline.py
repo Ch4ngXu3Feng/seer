@@ -11,8 +11,11 @@ class Item(scrapy.Item):
     score_num = scrapy.Field()
 
 
-class Pipeline:
+# FIXME
+class Pipeline(object):
     def __init__(self):
+        super().__init__()
+
         self.con = None
         self.cur = None
 
