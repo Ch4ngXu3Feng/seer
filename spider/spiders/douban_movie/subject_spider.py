@@ -102,7 +102,7 @@ class MovieSubjectPageSpider(CrawlSpider):
             if data:
                 subject[dms.Item.VOTES_NAME] = data[0].strip()
 
-        print("subject", subject, flush=True)
+        logging.info("subject: %s", subject)
         return subject
 
 
@@ -257,8 +257,7 @@ class MovieSubjectTagSpider(Spider):
                 subject[name] = value
 
         except Exception as e:
-            logging.error("Exception: %s", str(e))
-            print(e, flush=True)
+            logging.error("Exception: %s", e)
 
         return subject
 
@@ -268,11 +267,9 @@ class MovieSubjectTagSpider(Spider):
         movies_url = response.xpath('//a[@class="nbg"]/@href').extract()
         for movie_url in movies_url:
             logging.info("movie_url: %s", movie_url)
-            print("movie_url: ", movie_url, flush=True)
             yield Request(movie_url, callback=self.parse_subject)
 
         next_url = response.xpath('//span[@class="next"]/a/@href').extract()
         if next_url:
             logging.info("tag: %s", next_url[0])
-            print("tag: ", next_url[0], flush=True)
             yield Request(next_url[0])

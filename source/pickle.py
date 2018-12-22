@@ -2,7 +2,9 @@
 
 from typing import List, Union
 
+import os
 import time
+import logging
 import pandas as pd
 
 from core.source import DataSource
@@ -37,14 +39,14 @@ class PickleDataSource(DataSource):
         file_name: str = self.__file_name
         table_name: str = self.__table_name
         extension: str = self.extension()
-        return f"{file_dir}/{file_name}_{table_name}.{extension}"
+        return os.path.join(f"{file_dir}", f"{file_name}_{table_name}.{extension}")
 
     def read(self, fields: List[str]=None, raw: bool=False) -> Union[pd.DataFrame, List]:
         if self.data is None:
             start = int(time.time())
             self.data = pd.read_pickle(self.path())
             end = int(time.time())
-            print("pickle read data time:", end - start)
+            logging.info("pickle read data time: %d", end - start)
         return self.data
 
     def write(self) -> None:
@@ -52,7 +54,7 @@ class PickleDataSource(DataSource):
             start = int(time.time())
             self.data.to_pickle(self.path())
             end = int(time.time())
-            print("pickle write data time:", end - start)
+            logging.info("pickle write data time: %d", end - start)
 
     def extension(self) -> str:
         return "pickle"

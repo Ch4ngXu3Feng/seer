@@ -6,7 +6,7 @@ from tornado.options import options
 
 
 def server_runner() -> None:
-    while True:
+    if "init application":
         from tornado.web import Application
         from handler import IndexHandler, TemplateHandler, MappingsHandler, TermsHandler, SeriesHandler
 
@@ -26,41 +26,40 @@ def server_runner() -> None:
 
         application = Application(handlers, **settings)
 
-        while True:
-            import logging
-            import sys
+    if "init log":
+        import logging
+        import sys
 
-            # logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+        # logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 
-            formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-            root = logging.getLogger()
+        formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+        root = logging.getLogger()
 
-            file_handler = logging.FileHandler("data/test.log")
-            file_handler.setFormatter(formatter)
-            file_handler.setLevel(logging.INFO)
-            root.addHandler(file_handler)
+        file_handler = logging.FileHandler("data/test.log")
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.INFO)
+        root.addHandler(file_handler)
 
-            console_handler = logging.StreamHandler(sys.stdout)
-            console_handler.setFormatter(formatter)
-            console_handler.setLevel(logging.DEBUG)
-            root.addHandler(console_handler)
-            break
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(formatter)
+        console_handler.setLevel(logging.DEBUG)
+        # root.addHandler(console_handler)
+        for _handler in root.handlers:
+            logging.error("handler: %s, type: %s", type(_handler), _handler)
 
+    if "init builder":
         from series.builder import SeriesBuilder
         builder: SeriesBuilder = SeriesBuilder(options.data_path)
         builder.load()
         application.series_builder = builder
-
         application.listen(options.port)
-        break
 
-    while True:
+    if "loop":
         import tornado.ioloop
         try:
             tornado.ioloop.IOLoop.instance().start()
         except KeyboardInterrupt:
             tornado.ioloop.IOLoop.instance().stop()
-        break
 
 
 def scrapy_runner() -> None:

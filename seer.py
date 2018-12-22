@@ -20,4 +20,4 @@ if __name__ == "__main__":
         transformer_runner()
 
     else:
-        print("No runner found!", flush=True)
+        raise NotImplementedError()

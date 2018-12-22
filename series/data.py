@@ -3,6 +3,7 @@
 from typing import Any, Type, Optional
 import time
 import pandas as pd
+import logging
 
 from core.builder import Builder
 from core.store import DataStore
@@ -51,5 +52,5 @@ class SeriesData(Adapter):
         if len(self.__drawing):
             html = self.__drawing.draw()
         end = int(time.time())
-        print("drawing scatter: ", end - start)
+        logging.info("drawing scatter: %d", end - start)
         return html

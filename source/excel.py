@@ -2,6 +2,7 @@
 
 from typing import List, Union
 
+import logging
 import pandas as pd
 from pandas import DataFrame
 
@@ -17,7 +18,7 @@ class ExcelDataSource(DataSource):
     def read(self, fields: List[str]=None, raw: bool=False) -> Union[DataFrame, List]:
         if self.data is None:
             self.data = pd.read_excel(self.__data_path, self.__table_name, encoding=self.encoding())
-        print(self.data, flush=True)
+        logging.info("excel read:\n%s", self.data)
         return self.data
 
     def write(self) -> None:

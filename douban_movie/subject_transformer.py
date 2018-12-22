@@ -2,6 +2,7 @@
 
 from typing import List, Tuple, Dict, Callable
 import time
+import logging
 
 from pandas import DataFrame
 
@@ -57,16 +58,19 @@ class MovieSubjectTransformer(Transformer):
         for record in _data:
             self.__transform_record(record)
         end = int(time.time())
-        print("load data time: ", end - start, flush=True)
+        logging.info("load data time: %d", end - start)
 
         for vd in self.__view_data:
-            print(vd[0], len(vd[-1]))
+            logging.info("view data item: name: %s count: %d", vd[0], len(vd[-1]))
 
         start = int(time.time())
         df = DataFrame({item[0]: item[-1] for item in self.__view_data})
         end = int(time.time())
-        print("DataFrame time: ", end - start, len(self.__view_data[0]),
-              df[store.key()].count(), flush=True)
+
+        logging.info(
+            "DataFrame time: %d, total: %d, key: %d",
+            end - start, len(self.__view_data[0]), df[store.key()].count()
+        )
 
         dst.data = df
         dst.write()

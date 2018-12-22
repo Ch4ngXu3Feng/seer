@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import logging
 import sqlite3 as sql
 import scrapy
 
@@ -44,12 +45,9 @@ class Pipeline(object):
         score = item['score']
         score_num = item['score_num']
 
-        print(
-            (
-                f"INSERT OR IGNORE INTO {table} "
-                f"VALUES(NULL, '{movie_name}', {ranking}, {score}, {score_num})"
-            ),
-            flush=True
+        logging.info(
+            "INSERT OR IGNORE INTO %s VALUES(NULL, '%s', %s, %s, %s)",
+            table, movie_name, ranking, score, score_num
         )
 
         self.cur.execute(

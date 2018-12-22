@@ -3,6 +3,7 @@
 from typing import List, Union
 
 import time
+import logging
 import pandas as pd
 import sqlite3 as sql
 
@@ -50,7 +51,7 @@ class SqliteDataSource(DataSource):
             else:
                 self.data = pd.read_sql_query(query, self.__conn)
             end = int(time.time())
-            print("sqlite read data time: ", end - start, len(self.data), flush=True)
+            logging.info("sqlite read data time: %d, count: %d", end - start, len(self.data))
 
         return self.data
 

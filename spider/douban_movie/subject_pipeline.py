@@ -113,13 +113,16 @@ class Pipeline(cp.Pipeline):
         average = item.get(Item.AVERAGE_NAME, "")
         votes = item.get(Item.VOTES_NAME, "")
 
-        log: str = (
-            f"INSERT OR IGNORE INTO {table} VALUES("
-            f"{movie_id}, '{title}', '{director}', '{author}', '{actor}', '{region}', '{lang}', "
-            f"'{genre}', '{release}', '{episode}', '{duration}', '{runtime}', '{average}', '{votes}')"
+        logging.info(
+            (
+                "INSERT OR IGNORE INTO %s VALUES("
+                "%d, '%s', '%s', '%s', '%s', '%s', '%s', "
+                "'%s', '%s', '%s', '%s', '%s', '%s', '%s')"
+            ),
+            table, movie_id, title, director, author,
+            actor, region, lang, genre, release,
+            episode, duration, runtime, average, votes
         )
-        logging.info(log)
-        print(log, flush=True)
 
         return (
             f"INSERT OR IGNORE INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
