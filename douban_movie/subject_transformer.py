@@ -150,5 +150,10 @@ class MovieSubjectTransformer(Transformer):
         return average
 
     @staticmethod
-    def __parse_votes(item: str) -> List[str]:
-        return [value.strip() for value in item.split("/")]
+    def __parse_votes(item: str) -> int:
+        if item:
+            votes = int(item.strip())
+        else:
+            votes = -1
+
+        return votes

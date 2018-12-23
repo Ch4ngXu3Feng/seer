@@ -30,22 +30,31 @@ def server_runner() -> None:
         import logging
         import sys
 
-        # logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
-
-        formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
         root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
 
-        file_handler = logging.FileHandler("data/test.log")
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(logging.INFO)
-        root.addHandler(file_handler)
-
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(formatter)
-        console_handler.setLevel(logging.DEBUG)
-        # root.addHandler(console_handler)
+        handler: logging.Handler = None
+        formatter: logging.Formatter = None
         for _handler in root.handlers:
-            logging.error("handler: %s, type: %s", type(_handler), _handler)
+            if isinstance(_handler, logging.StreamHandler):
+                handler = _handler
+                formatter = _handler.formatter
+
+        if formatter and handler:
+            root.removeHandler(handler)
+
+            file_handler = logging.FileHandler(os.path.join(options.data_path, 'log', 'server.log'))
+            file_handler.setFormatter(formatter)
+            file_handler.setLevel(logging.INFO)
+            root.addHandler(file_handler)
+
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setFormatter(formatter)
+            console_handler.setLevel(logging.DEBUG)
+            root.addHandler(console_handler)
+
+        else:
+            raise RuntimeError()
 
     if "init builder":
         from series.builder import SeriesBuilder
@@ -79,17 +88,20 @@ def scrapy_runner() -> None:
         url = "https://movie.douban.com/tag/"
     elif application == "douban_music":
         url = "https://music.douban.com/tag/"
+    else:
+        raise NotImplementedError()
 
     spider: str = f"{application}_{topic}_tag"
 
     for year in list(range(end_year, start_year, -1)):
+        path = os.path.join(data_path, "log", f"{application}_{topic}_{year}.log")
         cmd: str = (
             f'scrapy crawl {spider} '
             f'-a start_url={url}{year} '
             f'-a data_path={data_path} '
             f'-a application={application} '
             f'-a topic={topic} '
-            f'-s LOG_FILE={data_path}/log/{application}_{topic}_{year}.log'
+            f'-s LOG_FILE={path}'
         )
         os.system(cmd)
         time.sleep(4)

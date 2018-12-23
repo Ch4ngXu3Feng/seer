@@ -34,8 +34,12 @@ class SdAggregatorObserver(AggregatorObserver):
         aggregator = self.__sd.aggregator
 
         if isinstance(aggregator, (SumFieldAggregator, MeanFieldAggregator)):
-            for name, __data in self.__split_dict(data).items():
-                drawing.add_scatter(name, __data)
+            lines = dict()
+            if self.__split_dict(data.to_dict(), lines):
+                for name, __data in lines.items():
+                    drawing.add_scatter(name, __data)
+            else:
+                drawing.add_scatter(name, lines)
 
         elif isinstance(aggregator, BoxFieldAggregator):
             drawing.add_box(name, data.values)
@@ -45,17 +49,26 @@ class SdAggregatorObserver(AggregatorObserver):
 
     def update_series(self, name: str, series: pd.Series) -> None:
         drawing = self.__sd.drawing
-        for _name, _data in self.__split_dict(series.to_dict()).items():
-            drawing.add_scatter(_name, _data)
+        lines = dict()
+        if self.__split_dict(series.to_dict(), lines):
+            for _name, _data in lines.items():
+                drawing.add_scatter(_name, _data)
+        else:
+            drawing.add_scatter(name, lines)
 
     @staticmethod
-    def __split_dict(data: Any) -> Dict[Any, Dict[Any, Any]]:
-        result: Dict = dict()
+    def __split_dict(data: Any, result: Any) -> bool:
+        term = False
         for _name, _value in data.items():
-            first, second = _name
-            _data = result.get(first)
-            if _data is None:
-                _data = dict()
-                result[first] = _data
-            _data[second] = _value
-        return result
+            if isinstance(_name, tuple):
+                first, second = _name
+                _data = result.get(first)
+                if _data is None:
+                    _data = dict()
+                    result[first] = _data
+                _data[second] = _value
+                term = True
+            else:
+                result[_name] = _value
+                term = False
+        return term

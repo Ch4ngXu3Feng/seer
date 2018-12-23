@@ -8,6 +8,14 @@ from core.transformer import Transformer
 
 
 class SeriesBuilder(Builder):
+    """
+    source load data time: 9(load by DataFrame)
+    source load data time: 0(load by sqlite3)
+    load data time: 4
+    DataFrame time: 2 1770910
+    load store: 1770910 14
+    """
+
     def __init__(self, _dir: str) -> None:
         super().__init__()
 
@@ -45,7 +53,7 @@ class SeriesBuilder(Builder):
         self.__store.data = self.__source.read()
 
     def create_source(self, application: str, topic: str, raw: bool=False):
-        _source: DataSource = None
+        # _source: DataSource = None
 
         if (application.find("douban_movie") != -1 and
                 topic.find("subject") != -1):
@@ -56,10 +64,13 @@ class SeriesBuilder(Builder):
                 self.__load_douban_movie_source()
                 _source = self.__source
 
+        else:
+            raise NotImplementedError()
+
         return _source
 
     def create_store(self, application: str, topic: str) -> DataStore:
-        store: DataStore = None
+        # store: DataStore = None
         file_name = application
         table_name = topic
 
@@ -67,6 +78,9 @@ class SeriesBuilder(Builder):
                 table_name.find("subject") != -1):
             self.__load_douban_movie_store()
             store = self.__store
+
+        else:
+            raise NotImplementedError()
 
         return store
 
@@ -80,12 +94,6 @@ class SeriesBuilder(Builder):
                 topic.find("subject") != -1):
             from douban_movie.subject_transformer import MovieSubjectTransformer
             self.__transformer = MovieSubjectTransformer()
+        else:
+            raise NotImplementedError()
         return self.__transformer
-
-    """
-    source load data time: 9(load by DataFrame)
-    source load data time: 0(load by sqlite3)
-    load data time: 4
-    DataFrame time: 2 1770910
-    load store: 1770910 14
-    """

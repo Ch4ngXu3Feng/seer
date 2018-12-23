@@ -6,7 +6,6 @@ import scrapy
 import core.pipeline as cp
 
 
-# FIXME
 class Item(scrapy.Item):
     MUSIC_ID_NAME = "music_id"
     music_id = scrapy.Field()

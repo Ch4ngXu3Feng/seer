@@ -1,7 +1,5 @@
 # coding=utf-8
 
-import re
-import json
 import random
 import string
 import logging
@@ -12,7 +10,6 @@ from scrapy.linkextractors import LinkExtractor
 import spider.douban_music.subject_pipeline as dms
 
 
-# FIXME
 class MusicSubjectSpider(CrawlSpider):
     name = 'douban_music_subject_page'
     allowed_domains = ['music.douban.com']

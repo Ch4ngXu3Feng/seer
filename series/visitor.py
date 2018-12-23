@@ -91,4 +91,4 @@ class SeriesDataVisitor(DataVisitor):
 
             data = self.__context.adapter(pd.DataFrame)
             data = self.__aggregator.filter(data)
-            self.__aggregator.aggregate("FIXME", data)
+            self.__aggregator.aggregate("", data)

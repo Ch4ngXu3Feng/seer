@@ -7,6 +7,14 @@ if __name__ == "__main__":
 
     from tornado.options import options
 
+    if "make dir":
+        import os
+        dirs = ["log", "raw", "store"]
+        for _dir in dirs:
+            path = os.path.join(options.data_path, _dir)
+            if not os.path.exists(_dir):
+                os.makedirs(_dir)
+
     if options.runner == "server":
         from runner import server_runner
         server_runner()

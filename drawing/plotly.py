@@ -3,8 +3,8 @@
 from typing import List, Dict, Union, Type
 
 from numpy import ndarray
-import plotly.graph_objs as go
 import plotly
+import plotly.graph_objs as go
 
 from core.drawing import Drawing
 
