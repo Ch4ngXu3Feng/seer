@@ -5,7 +5,7 @@ import json
 
 from scrapy.spiders import Request, Spider
 
-import spider.douban_movie.top250 as dtm
+import spider.douban_movie.top250_pipeline as dtm
 
 
 class Top250MoviePageSpider(Spider):

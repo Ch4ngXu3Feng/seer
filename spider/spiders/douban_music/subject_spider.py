@@ -17,13 +17,13 @@ class MusicSubjectSpider(CrawlSpider):
 
     custom_settings = {
         'ITEM_PIPELINES': {
-            'spider.douban.movie_subject.Pipeline': 0,
+            'spider.douban_music.subject_pipeline.Pipeline': 0,
         }
     }
 
     """
     Rule(LinkExtractor(
-        allow='https://movie.douban.com/subject/(\d)/'),
+        allow='https://music.douban.com/subject/(\d)/'),
         callback='parse_item',
         follow=True,
         process_request='cookie',
